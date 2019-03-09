@@ -26,7 +26,7 @@ fetch(url)
   .then(body => console.log(body));
 ```
 
-And here is a typical response to the above query:
+And here is the typical output from the above request:
 
 ```json
 {
