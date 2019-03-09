@@ -15,44 +15,76 @@ mongoose
 
 const validateAPIKey = (req, res, next) => {
   if (!req.headers.authorization)
-    return res.json({ error: "Missing authorization header." });
+    return res.json({
+      success: false,
+      statusCode: 401,
+      statusMessage: "Unauthorized",
+      message: "Missing authorization header."
+    });
   if (req.header.authorization !== process.env.API_KEY)
-    return res.json({ error: "Invalid API Key" });
+    return res.json({
+      success: false,
+      statusCode: 401,
+      statusMessage: "Unauthorized",
+      message: "Invalid API Key"
+    });
 
   next();
 };
 
 app.use(bodyParser.json());
 
-app.get("/api", (req, res) => {
-  res.send("Welcome to the API.");
-});
-
-app.get("/api/readings", (req, res) => {
-  getReadings().then(readings => {
-    res.send({ success: true, readings });
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    statusCode: 200,
+    statusMessage: "OK",
+    message:
+      "Welcome to the SmartIr API. You can get readings from the /readings endpoint. You can also submit readings to the database using the /readings endpoint."
   });
 });
 
-app.use(validateAPIKey);
+app.get("/readings", (req, res) => {
+  getReadings().then(readings => {
+    res.json({
+      success: true,
+      statusCode: 200,
+      statusMessage: "OK",
+      data: readings
+    });
+  });
+});
 
-app.post("/api/readings", (req, res) => {
+app.post("/readings", validateAPIKey, (req, res) => {
   const { success, message } = validateData(req.body);
   if (!success) {
-    res.send(`Post unsuccessful: ${message}`);
+    res.json({
+      success: false,
+      statusCode: 400,
+      statusMessage: "Bad Request",
+      message: `${message}`
+    });
     return;
   }
 
-  createReading(req.body).then(success => {
-    success
-      ? res.send("Success!")
-      : res.send("Error saving reading to database.");
+  createReading(req.body).then(created => {
+    created
+      ? res.json({
+          success: true,
+          statusCode: 200,
+          statusMessage: "OK",
+          message: "Saved new reading to database."
+        })
+      : res.json({
+          success: false,
+          statusCode: 500,
+          statusMessage: "Internal Server Error",
+          message: "Error saving reading to database."
+        });
   });
 });
 
-app.listen(port, () =>
-  console.log(`Listening on port ${port}.\nhttp://localhost:${port}/`)
-);
+app.listen(port, () => console.log(`Listening on port ${port}.`));
 
 const validateData = data => {
   if (
@@ -60,19 +92,19 @@ const validateData = data => {
     data.light === undefined ||
     data.temp === undefined
   )
-    return { success: false, message: "missing required field" };
+    return { success: false, message: "Missing required field." };
 
   if (
     typeof data.moisture !== "number" ||
     typeof data.light !== "number" ||
     typeof data.temp !== "number"
   )
-    return { success: false, message: "invalid field type." };
+    return { success: false, message: "Invalid field type." };
 
   return { success: true, message: "" };
 };
 
-const createReading = ({ id, moisture, light, temp }) => {
+const createReading = ({ moisture, light, temp }) => {
   return new Promise((resolve, reject) => {
     const reading = new Reading({
       date: Date.now(),
