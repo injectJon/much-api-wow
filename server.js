@@ -55,10 +55,8 @@ app.get("/readings", (req, res) => {
             statusMessage: "Internal Server Error",
             message: "Error retrieving readings from the database."
           });
-
           return;
         }
-
         res.json({
           success: true,
           statusCode: 200,
@@ -74,10 +72,8 @@ app.get("/readings", (req, res) => {
             statusMessage: "Internal Server Error",
             message: "Error retrieving readings from the database."
           });
-
           return;
         }
-
         res.json({
           success: true,
           statusCode: 200,
