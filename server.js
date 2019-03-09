@@ -45,14 +45,46 @@ app.get("/", (req, res) => {
 });
 
 app.get("/readings", (req, res) => {
-  getReadings().then(readings => {
-    res.json({
-      success: true,
-      statusCode: 200,
-      statusMessage: "OK",
-      data: readings
-    });
-  });
+  // If given a quantity, only get that amount, else get them all
+  req.query.quantity
+    ? getQuantityOfReadings(parseInt(req.query.quantity)).then(readings => {
+        if (!readings) {
+          res.json({
+            success: false,
+            statusCode: 500,
+            statusMessage: "Internal Server Error",
+            message: "Error retrieving readings from the database."
+          });
+
+          return;
+        }
+
+        res.json({
+          success: true,
+          statusCode: 200,
+          statusMessage: "OK",
+          data: readings
+        });
+      })
+    : getReadings().then(readings => {
+        if (!readings) {
+          res.json({
+            success: false,
+            statusCode: 500,
+            statusMessage: "Internal Server Error",
+            message: "Error retrieving readings from the database."
+          });
+
+          return;
+        }
+
+        res.json({
+          success: true,
+          statusCode: 200,
+          statusMessage: "OK",
+          data: readings
+        });
+      });
 });
 
 app.post("/readings", validateAPIKey, (req, res) => {
@@ -125,6 +157,17 @@ const createReading = ({ moisture, light, temp }) => {
 const getReadings = () => {
   return new Promise((resolve, reject) => {
     const readings = Reading.find();
-    resolve(readings);
+    readings ? resolve(readings) : resolve(null);
+  });
+};
+
+const getQuantityOfReadings = quantity => {
+  return new Promise((resolve, reject) => {
+    Reading.find()
+      .sort({ date: -1 })
+      .limit(quantity)
+      .exec((err, readings) => {
+        err ? resolve(null) : resolve(readings);
+      });
   });
 };
