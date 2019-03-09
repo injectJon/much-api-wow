@@ -7,7 +7,7 @@ const app = express();
 const Reading = require("./models/Reading");
 
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_URI, { useNewUrlParser: true })
   .then(
     () => console.log("Connected to database."),
     err => console.log(`Error connecting to database.\n${err}`)
@@ -21,12 +21,12 @@ const validateAPIKey = (req, res, next) => {
       statusMessage: "Unauthorized",
       message: "Missing authorization header."
     });
-  if (req.header.authorization !== process.env.API_KEY)
+  if (!req.headers.authorization.includes(process.env.API_KEY))
     return res.json({
       success: false,
       statusCode: 401,
       statusMessage: "Unauthorized",
-      message: "Invalid API Key"
+      message: "Invalid API Key."
     });
 
   next();
