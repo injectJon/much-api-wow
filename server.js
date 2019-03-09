@@ -157,7 +157,11 @@ const createReading = ({ moisture, light, temp }) => {
 const getReadings = () => {
   return new Promise((resolve, reject) => {
     const readings = Reading.find();
-    readings ? resolve(readings) : resolve(null);
+    Reading.find()
+      .sort({ date: -1 })
+      .exec((err, readings) => {
+        err ? resolve(null) : resolve(readings);
+      });
   });
 };
 
