@@ -56,8 +56,8 @@ app.get("/readings", (req, res) => {
 });
 
 app.post("/readings", validateAPIKey, (req, res) => {
-  const { success, message } = validateData(req.body);
-  if (!success) {
+  const { valid, message } = validateData(req.body);
+  if (!valid) {
     res.json({
       success: false,
       statusCode: 400,
@@ -67,13 +67,14 @@ app.post("/readings", validateAPIKey, (req, res) => {
     return;
   }
 
-  createReading(req.body).then(created => {
-    created
+  createReading(req.body).then(({ success, data }) => {
+    success
       ? res.json({
           success: true,
           statusCode: 200,
           statusMessage: "OK",
-          message: "Saved new reading to database."
+          message: "Saved new reading to database.",
+          data
         })
       : res.json({
           success: false,
@@ -92,16 +93,16 @@ const validateData = data => {
     data.light === undefined ||
     data.temp === undefined
   )
-    return { success: false, message: "Missing required field." };
+    return { valid: false, message: "Missing required field." };
 
   if (
     typeof data.moisture !== "number" ||
     typeof data.light !== "number" ||
     typeof data.temp !== "number"
   )
-    return { success: false, message: "Invalid field type." };
+    return { valid: false, message: "Invalid field type." };
 
-  return { success: true, message: "" };
+  return { valid: true, message: "" };
 };
 
 const createReading = ({ moisture, light, temp }) => {
@@ -114,7 +115,9 @@ const createReading = ({ moisture, light, temp }) => {
     });
 
     reading.save(err => {
-      err ? resolve(false) : resolve(true);
+      err
+        ? resolve({ success: false, data: "" })
+        : resolve({ success: true, data: reading });
     });
   });
 };
