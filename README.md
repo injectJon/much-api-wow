@@ -2,7 +2,7 @@
 
 This API serves SmartIr devices as well as frontend clients wishing to utilize the stored sensor data.
 
-#### Fetching readings
+### Fetching readings
 
 You can get readings from the API by visiting the following endpoint:
 https://much-api-wow.herokuapp.com/readings
@@ -17,7 +17,7 @@ If you'd like to limit the quantity of readings returned, and you should, use th
 
 Change the quantity to any number that fits your needs.
 
-#### Here is an example request using node-fetch:
+### Here is an example request using node-fetch:
 
 ```js
 const url = "https://much-api-wow.herokuapp.com/readings?quantity=1";
