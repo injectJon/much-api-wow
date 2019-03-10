@@ -67,7 +67,12 @@ app.get("/readings", (req, res) => {
 });
 
 app.post("/readings", utils.validateAPIKey, (req, res) => {
-  const { valid, message } = utils.validateData(req.body);
+  const data = {
+    moisture: parseInt(req.query.moisture),
+    light: parseInt(req.query.light),
+    temp: parseInt(req.query.temp)
+  };
+  const { valid, message } = utils.validateData(data);
   if (!valid) {
     res.json({
       success: false,
@@ -78,7 +83,7 @@ app.post("/readings", utils.validateAPIKey, (req, res) => {
     return;
   }
 
-  utils.createReading(req.body).then(({ success, data }) => {
+  utils.createReading(req.query).then(({ success, data }) => {
     success
       ? res.json({
           success: true,

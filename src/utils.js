@@ -21,6 +21,7 @@ module.exports = {
   },
   validateData: data => {
     if (
+      data.deviceID === undefined ||
       data.moisture === undefined ||
       data.light === undefined ||
       data.temp === undefined
@@ -28,6 +29,7 @@ module.exports = {
       return { valid: false, message: "Missing required field." };
 
     if (
+      typeof data.deviceID === "string" ||
       typeof data.moisture !== "number" ||
       typeof data.light !== "number" ||
       typeof data.temp !== "number"
@@ -56,13 +58,14 @@ module.exports = {
         });
     });
   },
-  createReading: ({ moisture, light, temp }) => {
+  createReading: ({ deviceID, moisture, light, temp }) => {
     return new Promise((resolve, reject) => {
       const reading = new Reading({
         date: Date.now(),
-        moisture,
-        light,
-        temp
+        deviceID: deviceID,
+        moisture: parseInt(moisture),
+        light: parseInt(light),
+        temp: parseInt(temp)
       });
 
       reading.save(err => {
